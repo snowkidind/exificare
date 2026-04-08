@@ -1,0 +1,22 @@
+{
+  "name": "exificare",
+  "version": "1.0.0",
+  "description": "EXIF data ETL tool — extract to Excel, edit, write back to image copies",
+  "type": "module",
+  "bin": {
+    "exificare": "./bin/exificare-ui.js"
+  },
+  "scripts": {
+    "start": "node bin/exificare.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "exceljs": "^4.4.0",
+    "exiftool-vendored": "^28.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

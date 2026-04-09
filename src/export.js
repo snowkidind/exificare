@@ -19,7 +19,7 @@ async function readFinderComment(filePath) {
     const { stdout } = await execFileAsync('osascript', [
       '-e', `tell application "Finder" to get comment of (POSIX file "${filePath}" as alias)`,
     ]);
-    const comment = stdout.trim();
+    const comment = stdout.trim().normalize('NFC');
     return comment || null;
   } catch {
     return null;

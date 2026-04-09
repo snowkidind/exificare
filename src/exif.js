@@ -61,11 +61,22 @@ export async function readAll(filePath) {
 export async function stripAndWrite(filePath, tags) {
   const et = getExifTool();
 
-  // Strip all existing metadata but preserve Orientation (prevents flipped images)
-  await et.write(filePath, {}, ['-all=', '--Orientation', '-overwrite_original']);
+  // Read original Orientation before stripping — pixel data stays in sensor
+  // orientation, so losing this tag makes images render upside-down / sideways
+  const original = await et.read(filePath);
+  const originalOrientation = original.Orientation;
+
+  // Strip all existing metadata
+  await et.write(filePath, {}, ['-all=', '-overwrite_original']);
 
   // Filter to writable, non-empty tags
   const cleaned = {};
+
+  // Preserve original Orientation as a fallback (spreadsheet value takes precedence)
+  if (originalOrientation !== undefined && originalOrientation !== null) {
+    cleaned.Orientation = originalOrientation;
+  }
+
   for (const [key, value] of Object.entries(tags)) {
     if (READ_ONLY_TAGS.has(key)) continue;
     if (value === undefined || value === null || value === '') continue;

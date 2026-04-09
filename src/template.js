@@ -41,7 +41,14 @@ export async function runTemplate(templatePath, baseDir, overwrite) {
     const tag = String(row.getCell(1).value || '').trim();
     const value = row.getCell(2).value;
     if (tag && value !== null && value !== undefined && value !== '') {
-      templateValues.set(tag, String(value));
+      if (typeof value === 'object') {
+        if (value instanceof Date) templateValues.set(tag, value.toISOString());
+        else if (value.richText) templateValues.set(tag, value.richText.map(r => r.text).join(''));
+        else if (value.text) templateValues.set(tag, String(value.text));
+        else templateValues.set(tag, JSON.stringify(value));
+      } else {
+        templateValues.set(tag, String(value));
+      }
     }
   });
 

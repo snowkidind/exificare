@@ -44,7 +44,9 @@ export async function readAll(filePath) {
       const str = value.toString?.();
       result[key] = (str && str !== '[object Object]') ? str : JSON.stringify(value);
     } else if (Array.isArray(value)) {
-      result[key] = value.join(', ');
+      result[key] = value.map(v =>
+        typeof v === 'object' && v !== null ? (v.toString?.() !== '[object Object]' ? v.toString() : JSON.stringify(v)) : String(v)
+      ).join(', ');
     } else {
       result[key] = String(value);
     }
@@ -59,8 +61,8 @@ export async function readAll(filePath) {
 export async function stripAndWrite(filePath, tags) {
   const et = getExifTool();
 
-  // Strip all existing metadata
-  await et.write(filePath, {}, ['-all=', '-overwrite_original']);
+  // Strip all existing metadata but preserve Orientation (prevents flipped images)
+  await et.write(filePath, {}, ['-all=', '--Orientation', '-overwrite_original']);
 
   // Filter to writable, non-empty tags
   const cleaned = {};

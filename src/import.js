@@ -83,7 +83,22 @@ export async function runImport(baseDir) {
 
         const cellValue = row.getCell(col).value;
         if (cellValue !== null && cellValue !== undefined && cellValue !== '') {
-          tags[header] = String(cellValue);
+          // ExcelJS can return objects for rich text, hyperlinks, dates, etc.
+          if (typeof cellValue === 'object') {
+            if (cellValue instanceof Date) {
+              tags[header] = cellValue.toISOString();
+            } else if (cellValue.richText) {
+              tags[header] = cellValue.richText.map(r => r.text).join('');
+            } else if (cellValue.text) {
+              tags[header] = String(cellValue.text);
+            } else if (cellValue.result !== undefined) {
+              tags[header] = String(cellValue.result);
+            } else {
+              tags[header] = JSON.stringify(cellValue);
+            }
+          } else {
+            tags[header] = String(cellValue);
+          }
         }
       }
     });

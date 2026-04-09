@@ -80,9 +80,13 @@ export async function stripAndWrite(filePath, tags) {
     cleaned[key] = value;
   }
 
-  // Strip all metadata AND write new tags in a single atomic operation
-  // so Orientation is never lost between two separate exiftool calls
-  await et.write(filePath, cleaned, ['-all=', '-overwrite_original']);
+  // Step 1: strip all existing metadata
+  await et.write(filePath, {}, ['-all=', '-overwrite_original']);
+
+  // Step 2: write new tags (includes preserved Orientation)
+  if (Object.keys(cleaned).length > 0) {
+    await et.write(filePath, cleaned, ['-overwrite_original']);
+  }
 }
 
 /**

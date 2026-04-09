@@ -39,7 +39,7 @@ export async function readAll(filePath) {
   for (const [key, value] of Object.entries(tags)) {
     if (value === undefined || value === null) continue;
     if (typeof value === 'object' && value.constructor?.name === 'ExifDateTime') {
-      result[key] = value.toString();
+      result[key] = value.rawValue ?? value.toString();
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       const str = value.toString?.();
       result[key] = (str && str !== '[object Object]') ? str : JSON.stringify(value);

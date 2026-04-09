@@ -25,7 +25,7 @@ const READ_ONLY_TAGS = new Set([
   'ExifImageWidth', 'ExifImageHeight',
   'PhotometricInterpretation', 'Compression',
   'FocalLength35efl',
-  'CurrentIPTCDigest', 'CodedCharacterSet',
+  'CurrentIPTCDigest',
   'ApplicationRecordVersion',
 ]);
 
@@ -68,6 +68,9 @@ export async function stripAndWrite(filePath, tags) {
 
   // Filter to writable, non-empty tags
   const cleaned = {};
+
+  // Always set IPTC to UTF-8 so umlauts and other Unicode render correctly
+  cleaned.CodedCharacterSet = 'UTF8';
 
   // Preserve original Orientation as a fallback (spreadsheet value takes precedence)
   if (originalOrientation !== undefined && originalOrientation !== null) {

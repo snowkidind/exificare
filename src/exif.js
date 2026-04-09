@@ -38,8 +38,8 @@ export async function readAll(filePath) {
   const result = {};
   for (const [key, value] of Object.entries(tags)) {
     if (value === undefined || value === null) continue;
-    if (typeof value === 'object' && value.constructor?.name === 'ExifDateTime') {
-      result[key] = value.rawValue ?? value.toString();
+    if (typeof value === 'object' && !Array.isArray(value) && value.rawValue !== undefined) {
+      result[key] = value.rawValue;
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       const str = value.toString?.();
       result[key] = (str && str !== '[object Object]') ? str : JSON.stringify(value);
@@ -71,13 +71,18 @@ export async function stripAndWrite(filePath, tags) {
 
   // Preserve original Orientation as a fallback (spreadsheet value takes precedence)
   if (originalOrientation !== undefined && originalOrientation !== null) {
-    cleaned.Orientation = originalOrientation;
+    cleaned['Orientation#'] = Number(originalOrientation);
   }
 
   for (const [key, value] of Object.entries(tags)) {
     if (READ_ONLY_TAGS.has(key)) continue;
     if (value === undefined || value === null || value === '') continue;
-    cleaned[key] = value;
+    // Orientation requires # suffix for exiftool to accept the numeric value
+    if (key === 'Orientation') {
+      cleaned['Orientation#'] = Number(value) || value;
+    } else {
+      cleaned[key] = value;
+    }
   }
 
   // Step 1: strip all existing metadata

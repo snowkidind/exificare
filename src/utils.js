@@ -71,9 +71,9 @@ export async function discoverImages(archiveDir) {
 export async function confirm(message) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   return new Promise(resolvePromise => {
-    rl.question(chalk.yellow(message + ' Type y to continue: '), answer => {
+    rl.question(chalk.yellow(message + ' (Y/n): '), answer => {
       rl.close();
-      resolvePromise(answer.trim().toLowerCase() === 'y');
+      resolvePromise(answer.trim().toLowerCase() !== 'n');
     });
   });
 }

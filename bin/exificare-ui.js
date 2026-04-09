@@ -61,7 +61,7 @@ async function pickDir() {
   const defaultDir = join(homedir(), 'Desktop', 'ExificareOutput');
   console.log('');
   console.log(chalk.gray(`  Default folder: ${defaultDir}`));
-  const answer = await ask('  Use default folder? (y/n):');
+  const answer = await ask('  Use default folder? (Y/n): ');
 
   if (answer.toLowerCase() === 'n') {
     const custom = await ask('  Enter folder path: ');
@@ -97,7 +97,7 @@ async function pickTemplate(baseDir) {
   if (templates.length === 1) {
     console.log('');
     console.log(chalk.white(`  Found template: ${templates[0]}`));
-    const confirm = await ask('  Use this template? (y/n):');
+    const confirm = await ask('  Use this template? (Y/n): ');
     if (confirm.toLowerCase() === 'n') return null;
     return join(templateDir, templates[0]);
   }
@@ -122,7 +122,7 @@ async function pickTemplate(baseDir) {
 }
 
 async function pickOverwrite() {
-  const answer = await ask('  Overwrite existing values? (y/n):');
+  const answer = await ask('  Overwrite existing values? (y/N): ');
   return answer.toLowerCase() === 'y';
 }
 

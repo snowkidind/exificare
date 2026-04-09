@@ -41,7 +41,8 @@ export async function readAll(filePath) {
     if (typeof value === 'object' && value.constructor?.name === 'ExifDateTime') {
       result[key] = value.toString();
     } else if (typeof value === 'object' && !Array.isArray(value)) {
-      result[key] = value.toString?.() ?? JSON.stringify(value);
+      const str = value.toString?.();
+      result[key] = (str && str !== '[object Object]') ? str : JSON.stringify(value);
     } else if (Array.isArray(value)) {
       result[key] = value.join(', ');
     } else {

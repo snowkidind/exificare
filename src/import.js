@@ -1,9 +1,13 @@
 import { join } from 'path';
 import { copyFile, mkdir, access } from 'fs/promises';
 import { constants } from 'fs';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import ExcelJS from 'exceljs';
 import { stripAndWrite, close } from './exif.js';
 import { log, success, warn, error, progress, progressDone, confirm } from './utils.js';
+
+const execFileAsync = promisify(execFile);
 
 export async function runImport(baseDir) {
   const archiveDir = join(baseDir, 'Archive');
@@ -151,6 +155,14 @@ export async function runImport(baseDir) {
 
   progressDone();
   await close();
+
+  // Re-index with Spotlight so Finder Get Info shows updated metadata
+  try {
+    await execFileAsync('mdimport', [outputDir]);
+    log('Spotlight re-indexed Output/');
+  } catch {
+    warn('Could not run mdimport — Finder metadata may not update immediately');
+  }
 
   console.log('');
   success(`Wrote EXIF to ${copied} files in Output/`);

@@ -1,10 +1,30 @@
 import { join } from 'path';
 import { mkdir, access, rename } from 'fs/promises';
 import { constants } from 'fs';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import ExcelJS from 'exceljs';
 import { readAll, close } from './exif.js';
 import { SHEETS, TOTAL_BUCKETS, categorize, collectColumns } from './sheets.js';
 import { discoverImages, log, success, warn, error, progress, progressDone } from './utils.js';
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * Read the macOS Finder comment for a file (Get Info → Comments).
+ * Returns the comment string or null.
+ */
+async function readFinderComment(filePath) {
+  try {
+    const { stdout } = await execFileAsync('osascript', [
+      '-e', `tell application "Finder" to get comment of (POSIX file "${filePath}" as alias)`,
+    ]);
+    const comment = stdout.trim();
+    return comment || null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * If exif-data.xlsx already exists, rename it to exif-data.v1.xlsx (or v2, v3, etc.)
@@ -61,6 +81,17 @@ export async function runExport(baseDir) {
     progress(i + 1, images.length, fileName);
     try {
       const tags = await readAll(join(archiveDir, fileName));
+
+      // If the file has a macOS Finder comment (Get Info → Comments),
+      // seed it into the caption fields so it appears in the spreadsheet
+      if (!tags['ImageDescription'] && !tags['Caption-Abstract']) {
+        const comment = await readFinderComment(join(archiveDir, fileName));
+        if (comment) {
+          tags['ImageDescription'] = comment;
+          tags['Caption-Abstract'] = comment;
+        }
+      }
+
       allTags.push({ fileName, tags });
       allBuckets.push(categorize(tags));
     } catch (err) {
